@@ -4,6 +4,8 @@
             {{ __('Profile Information') }}
         </h2>
 
+        <img width="50" height="50" class="rounded-full" src="{{ "/storage/$user->avatar" }}" alt="user avatar">
+
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
             Upload your Avatar
         </p>
@@ -13,26 +15,27 @@
         @csrf
     </form> --}}
 
+
     @if (session('message'))
         <div class="text-red-500">
             {{ session('message') }}
-        </div> 
+        </div>
     @endif
 
-<form method="post" action="{{ route('profile.avatar') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.avatar') }}" enctype="multipart/form-data" class="mt-6 space-y-6">
         @csrf
         @method('patch')
 
         <div>
             <x-input-label for="avatar" value="Avatar" />
             <x-text-input id="avatar" name="avatar" type="file" class="mt-1 block w-full" :value="old('avatar', $user->avatar)"
-                required autofocus autocomplete="avatar" />
+                autofocus autocomplete="avatar" />
             <x-input-error class="mt-2" :messages="$errors->get('avatar')" />
         </div>
 
-  
 
-   
+
+
 
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
