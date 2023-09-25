@@ -1,9 +1,12 @@
 <?php
 
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Laravel\Socialite\Facades\Socialite;
+use App\Http\Controllers\TicketController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Profile\AvatarController;
-use OpenAI\Laravel\Facades\OpenAI;
 
 /*
 |--------------------------------------------------------------------------
@@ -11,8 +14,8 @@ use OpenAI\Laravel\Facades\OpenAI;
 |--------------------------------------------------------------------------
 |
 | Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
 |
 */
 
@@ -26,24 +29,32 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-
-    Route::patch('/profile/avatar', [AvatarController::class, 'update'])->name('profile.avatar');
-
-
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::patch('/profile/avatar', [AvatarController::class, 'update'])->name('profile.avatar');
+    Route::post('/profile/avatar/ai', [AvatarController::class, 'generate'])->name('profile.avatar.ai');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
+Route::post('/auth/redirect', function () {
+    return Socialite::driver('github')->redirect();
+})->name('login.github');
 
+Route::get('/auth/callback', function () {
+    $user = Socialite::driver('github')->user();
+    $user = User::firstOrCreate(['email' => $user->email], [
+        'name'     => $user->name,
+        'password' => 'password',
+    ]);
 
-Route::get('/openai', function(){
-$result = OpenAI::images()->create([
-    'prompt' => 'A cute baby sea otter',
-    'n' => 2,
-    'size' => '512x512',
-]);
+    Auth::login($user);
+    return redirect('/dashboard');
+});
 
-echo $result['choices'][0]['text']; // an open-source, widely-used, server-side scripting language.
+Route::middleware('auth')->group(function () {
+    Route::resource('/ticket', TicketController::class);
+    // Route::get('/ticket/create', [TicketController::class, 'create'])->name('ticket.create');
+    // Route::post('/ticket/create', [TicketController::class, 'store'])->name('ticket.store');
 });
