@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Profile\AvatarController;
+use OpenAI\Laravel\Facades\OpenAI;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,3 +35,15 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+
+
+Route::get('/openai', function(){
+$result = OpenAI::images()->create([
+    'prompt' => 'A cute baby sea otter',
+    'n' => 2,
+    'size' => '512x512',
+]);
+
+echo $result['choices'][0]['text']; // an open-source, widely-used, server-side scripting language.
+});
