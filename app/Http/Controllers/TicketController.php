@@ -72,7 +72,7 @@ class TicketController extends Controller
         $ticket->update($request->except('attachment'));
 
         if ($request->has('status')) {
-            // $user = User::find($ticket->user_id);
+            $user = User::find($ticket->user_id);
             $ticket->user->notify(new TicketUpdatedNotification($ticket));
         }
 
